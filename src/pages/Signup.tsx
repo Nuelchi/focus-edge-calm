@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Shield, Eye, EyeOff, ArrowLeft, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -209,7 +208,7 @@ const Signup = () => {
                 <Checkbox 
                   id="terms" 
                   checked={agreedToTerms}
-                  onCheckedChange={setAgreedToTerms}
+                  onCheckedChange={(checked) => setAgreedToTerms(checked === true)}
                 />
                 <Label htmlFor="terms" className="text-sm leading-relaxed">
                   I agree to the{" "}
