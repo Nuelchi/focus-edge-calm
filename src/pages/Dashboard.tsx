@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Shield, Plus, Clock, Smartphone, Lock, Unlock, Play, Pause, Settings, Bell, BarChart3, Target, Calendar, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useToast } from "@/hooks/use-toast";
+import ProfileDropdown from "@/components/ProfileDropdown";
 
 const Dashboard = () => {
   const [activeSession, setActiveSession] = useState(null);
@@ -22,7 +22,6 @@ const Dashboard = () => {
     { title: "Focus Sessions", icon: Target },
     { title: "App Management", icon: Smartphone },
     { title: "Schedule", icon: Calendar },
-    { title: "Analytics", icon: BarChart3 },
     { title: "Settings", icon: Settings }
   ];
 
@@ -88,6 +87,7 @@ const Dashboard = () => {
               </div>
               <div className="flex items-center space-x-4">
                 <Badge className="bg-green-100 text-green-800">Free Trial - 5 days left</Badge>
+                <ProfileDropdown userName="Sarah Chen" userEmail="sarah@example.com" />
                 <SidebarTrigger />
               </div>
             </div>
