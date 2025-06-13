@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { Shield, User, CreditCard, Bell, Shield as ShieldIcon, Smartphone, Eye, EyeOff, Save } from "lucide-react";
+import { Shield, User, CreditCard, Bell, Shield as ShieldIcon, Smartphone, Eye, EyeOff, Save, Lightbulb, Target, Clock, Brain, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -110,12 +109,13 @@ const Settings = () => {
         </div>
 
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="security">Security</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
             <TabsTrigger value="devices">Devices</TabsTrigger>
             <TabsTrigger value="billing">Billing</TabsTrigger>
+            <TabsTrigger value="tips">Focus Tips</TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile">
@@ -530,6 +530,98 @@ const Settings = () => {
                         </div>
                       </div>
                     </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="tips">
+            <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Lightbulb className="h-5 w-5" />
+                  <span>Productivity & Focus Tips</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg">
+                    <div className="flex items-center space-x-2 mb-3">
+                      <Target className="h-6 w-6 text-blue-600" />
+                      <h3 className="font-semibold text-blue-800">Deep Work Sessions</h3>
+                    </div>
+                    <ul className="text-sm text-blue-700 space-y-2">
+                      <li>• Schedule deep work for your peak energy hours</li>
+                      <li>• Start with 45-90 minute blocks</li>
+                      <li>• Remove all digital distractions</li>
+                      <li>• Use the "phone in another room" rule</li>
+                    </ul>
+                  </div>
+
+                  <div className="p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-lg">
+                    <div className="flex items-center space-x-2 mb-3">
+                      <Clock className="h-6 w-6 text-green-600" />
+                      <h3 className="font-semibold text-green-800">Time Management</h3>
+                    </div>
+                    <ul className="text-sm text-green-700 space-y-2">
+                      <li>• Use the Pomodoro Technique (25min work, 5min break)</li>
+                      <li>• Time-block your calendar</li>
+                      <li>• Batch similar tasks together</li>
+                      <li>• Plan your day the night before</li>
+                    </ul>
+                  </div>
+
+                  <div className="p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg">
+                    <div className="flex items-center space-x-2 mb-3">
+                      <Brain className="h-6 w-6 text-purple-600" />
+                      <h3 className="font-semibold text-purple-800">Mental Clarity</h3>
+                    </div>
+                    <ul className="text-sm text-purple-700 space-y-2">
+                      <li>• Practice single-tasking</li>
+                      <li>• Take regular breaks to recharge</li>
+                      <li>• Use meditation apps for 5-10 minutes daily</li>
+                      <li>• Keep a distraction log to identify patterns</li>
+                    </ul>
+                  </div>
+
+                  <div className="p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg">
+                    <div className="flex items-center space-x-2 mb-3">
+                      <Settings className="h-6 w-6 text-orange-600" />
+                      <h3 className="font-semibold text-orange-800">Environment Setup</h3>
+                    </div>
+                    <ul className="text-sm text-orange-700 space-y-2">
+                      <li>• Create a dedicated workspace</li>
+                      <li>• Use noise-canceling headphones</li>
+                      <li>• Optimize lighting and temperature</li>
+                      <li>• Keep your workspace clutter-free</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+                  <h3 className="font-semibold text-gray-800 mb-4">💡 Today's Focus Challenge</h3>
+                  <p className="text-gray-700 mb-4">
+                    Try the "Two-Minute Rule": If a task takes less than two minutes, do it immediately. 
+                    This prevents small tasks from piling up and becoming overwhelming distractions.
+                  </p>
+                  <Button className="bg-gradient-to-r from-blue-600 to-purple-600">
+                    Accept Challenge
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center p-4 bg-white rounded-lg border">
+                    <div className="text-2xl font-bold text-blue-600">25</div>
+                    <div className="text-sm text-gray-600">Minutes of deep work</div>
+                  </div>
+                  <div className="text-center p-4 bg-white rounded-lg border">
+                    <div className="text-2xl font-bold text-green-600">5</div>
+                    <div className="text-sm text-gray-600">Minute break after</div>
+                  </div>
+                  <div className="text-center p-4 bg-white rounded-lg border">
+                    <div className="text-2xl font-bold text-purple-600">4</div>
+                    <div className="text-sm text-gray-600">Cycles then long break</div>
                   </div>
                 </div>
               </CardContent>

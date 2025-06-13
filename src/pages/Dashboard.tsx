@@ -7,6 +7,8 @@ import { Progress } from "@/components/ui/progress";
 import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useToast } from "@/hooks/use-toast";
 import ProfileDropdown from "@/components/ProfileDropdown";
+import ChatWidget from "@/components/ChatWidget";
+import { Link } from "react-router-dom";
 
 const Dashboard = () => {
   const [activeSession, setActiveSession] = useState(null);
@@ -18,11 +20,11 @@ const Dashboard = () => {
   const { toast } = useToast();
 
   const menuItems = [
-    { title: "Dashboard", icon: BarChart3, active: true },
-    { title: "Focus Sessions", icon: Target },
-    { title: "App Management", icon: Smartphone },
-    { title: "Schedule", icon: Calendar },
-    { title: "Settings", icon: Settings }
+    { title: "Dashboard", icon: BarChart3, active: true, path: "/dashboard" },
+    { title: "Focus Sessions", icon: Target, path: "/dashboard" },
+    { title: "Schedule", icon: Calendar, path: "/schedule" },
+    { title: "App Management", icon: Smartphone, path: "/dashboard" },
+    { title: "Settings", icon: Settings, path: "/settings" }
   ];
 
   const toggleAppBlock = (appName: string) => {
@@ -68,9 +70,11 @@ const Dashboard = () => {
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton className={item.active ? "bg-blue-50 text-blue-700" : ""}>
-                    <item.icon className="h-5 w-5" />
-                    <span>{item.title}</span>
+                  <SidebarMenuButton asChild className={item.active ? "bg-blue-50 text-blue-700" : ""}>
+                    <Link to={item.path} className="flex items-center space-x-2">
+                      <item.icon className="h-5 w-5" />
+                      <span>{item.title}</span>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -261,6 +265,8 @@ const Dashboard = () => {
             </Card>
           </div>
         </main>
+        
+        <ChatWidget />
       </div>
     </SidebarProvider>
   );
