@@ -1,63 +1,61 @@
-
 import { useState } from "react";
 import { Shield, Brain, Smartphone, Lock, Target, Calendar, Download, Menu, X, Star, Users, Zap, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
-
 const Index = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
-
-  const features = [
-    {
-      icon: Brain,
-      title: "AI-Powered Focus Assistant",
-      description: "Smart recommendations based on your productivity patterns and habits",
-      color: "from-blue-500 to-purple-600"
-    },
-    {
-      icon: Target,
-      title: "Intelligent App Blocking",
-      description: "AI learns your distraction patterns and proactively suggests optimal focus sessions",
-      color: "from-purple-500 to-pink-600"
-    },
-    {
-      icon: Calendar,
-      title: "Smart Scheduling",
-      description: "AI analyzes your calendar and suggests the best times for deep work sessions",
-      color: "from-pink-500 to-red-600"
-    },
-    {
-      icon: Clock,
-      title: "Predictive Focus Analytics",
-      description: "AI predicts your most productive hours and helps optimize your daily schedule",
-      color: "from-green-500 to-blue-600"
-    },
-    {
-      icon: Zap,
-      title: "Adaptive Learning",
-      description: "The more you use focusEdge, the smarter it gets at helping you stay focused",
-      color: "from-yellow-500 to-orange-600"
-    },
-    {
-      icon: Users,
-      title: "AI Chat Support",
-      description: "24/7 AI assistant for productivity tips, FAQs, and personalized guidance",
-      color: "from-indigo-500 to-purple-600"
-    }
-  ];
-
-  const stats = [
-    { number: "500K+", label: "Active Users", icon: Users },
-    { number: "2.5M", label: "Hours Focused", icon: Clock },
-    { number: "4.9", label: "App Store Rating", icon: Star },
-    { number: "95%", label: "Success Rate", icon: Target }
-  ];
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-mint-50">
+  const features = [{
+    icon: Brain,
+    title: "AI-Powered Focus Assistant",
+    description: "Smart recommendations based on your productivity patterns and habits",
+    color: "from-blue-500 to-purple-600"
+  }, {
+    icon: Target,
+    title: "Intelligent App Blocking",
+    description: "AI learns your distraction patterns and proactively suggests optimal focus sessions",
+    color: "from-purple-500 to-pink-600"
+  }, {
+    icon: Calendar,
+    title: "Smart Scheduling",
+    description: "AI analyzes your calendar and suggests the best times for deep work sessions",
+    color: "from-pink-500 to-red-600"
+  }, {
+    icon: Clock,
+    title: "Predictive Focus Analytics",
+    description: "AI predicts your most productive hours and helps optimize your daily schedule",
+    color: "from-green-500 to-blue-600"
+  }, {
+    icon: Zap,
+    title: "Adaptive Learning",
+    description: "The more you use focusEdge, the smarter it gets at helping you stay focused",
+    color: "from-yellow-500 to-orange-600"
+  }, {
+    icon: Users,
+    title: "AI Chat Support",
+    description: "24/7 AI assistant for productivity tips, FAQs, and personalized guidance",
+    color: "from-indigo-500 to-purple-600"
+  }];
+  const stats = [{
+    number: "500K+",
+    label: "Active Users",
+    icon: Users
+  }, {
+    number: "2.5M",
+    label: "Hours Focused",
+    icon: Clock
+  }, {
+    number: "4.9",
+    label: "App Store Rating",
+    icon: Star
+  }, {
+    number: "95%",
+    label: "Success Rate",
+    icon: Target
+  }];
+  return <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-mint-50">
       {/* Navigation */}
       <nav className="relative z-50 bg-white/80 backdrop-blur-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -81,18 +79,13 @@ const Index = () => {
             </div>
 
             {/* Mobile Menu Button */}
-            <Button
-              variant="ghost"
-              className="md:hidden"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
+            <Button variant="ghost" className="md:hidden" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
               {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </Button>
           </div>
 
           {/* Mobile Navigation */}
-          {isMobileMenuOpen && (
-            <div className="md:hidden pb-4 space-y-3">
+          {isMobileMenuOpen && <div className="md:hidden pb-4 space-y-3">
               <a href="#features" className="block text-gray-600 hover:text-gray-900">Features</a>
               <a href="#pricing" className="block text-gray-600 hover:text-gray-900">Pricing</a>
               <a href="#about" className="block text-gray-600 hover:text-gray-900">About</a>
@@ -102,8 +95,7 @@ const Index = () => {
                   Get Started
                 </Button>
               </div>
-            </div>
-          )}
+            </div>}
         </div>
       </nav>
 
@@ -130,17 +122,10 @@ const Index = () => {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button 
-                  onClick={() => navigate("/signup")}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-8 py-6 text-lg h-auto"
-                >
+                <Button onClick={() => navigate("/signup")} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-8 py-6 text-lg h-auto">
                   Start Your Free Trial
                 </Button>
-                <Button 
-                  variant="outline" 
-                  className="px-8 py-6 text-lg h-auto"
-                  onClick={() => navigate("/login")}
-                >
+                <Button variant="outline" className="px-8 py-6 text-lg h-auto" onClick={() => navigate("/login")}>
                   <Brain className="h-5 w-5 mr-2" />
                   See AI in Action
                 </Button>
@@ -217,15 +202,13 @@ const Index = () => {
       <section className="py-16 bg-white/50 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
+            {stats.map((stat, index) => <div key={index} className="text-center">
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full text-white mb-4">
                   <stat.icon className="h-6 w-6" />
                 </div>
                 <div className="text-3xl font-bold text-gray-900">{stat.number}</div>
                 <div className="text-gray-600">{stat.label}</div>
-              </div>
-            ))}
+              </div>)}
           </div>
         </div>
       </section>
@@ -250,8 +233,7 @@ const Index = () => {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <Card key={index} className="group hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+            {features.map((feature, index) => <Card key={index} className="group hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl border-0 bg-white/80 backdrop-blur-sm">
                 <CardContent className="p-8 space-y-4">
                   <div className={`inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r ${feature.color} rounded-lg text-white group-hover:scale-110 transition-transform duration-300`}>
                     <feature.icon className="h-6 w-6" />
@@ -259,8 +241,7 @@ const Index = () => {
                   <h3 className="text-xl font-semibold text-gray-900">{feature.title}</h3>
                   <p className="text-gray-600 leading-relaxed">{feature.description}</p>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -275,17 +256,10 @@ const Index = () => {
             Join thousands of users who've already regained control of their digital lives with AI-powered focus.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              onClick={() => navigate("/signup")}
-              className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-6 text-lg h-auto font-semibold"
-            >
+            <Button onClick={() => navigate("/signup")} className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-6 text-lg h-auto font-semibold">
               Start Free Trial - No Credit Card Required
             </Button>
-            <Button 
-              variant="outline"
-              className="border-white text-white hover:bg-white hover:text-blue-600 px-8 py-6 text-lg h-auto"
-              onClick={() => navigate("/login")}
-            >
+            <Button variant="outline" onClick={() => navigate("/login")} className="border-white hover:bg-white px-8 py-6 text-lg h-auto text-blue-800">
               Sign In
             </Button>
           </div>
@@ -294,11 +268,11 @@ const Index = () => {
           <div className="pt-8 space-y-4">
             <p className="text-blue-100">Also available on mobile:</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Button variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600">
+              <Button variant="outline" className="border-white text-white hover:text-blue-600 bg-slate-900 hover:bg-slate-800">
                 <Download className="h-4 w-4 mr-2" />
                 App Store
               </Button>
-              <Button variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600">
+              <Button variant="outline" className="border-white text-white hover:text-blue-600 bg-emerald-700 hover:bg-emerald-600">
                 <Download className="h-4 w-4 mr-2" />
                 Google Play
               </Button>
@@ -354,8 +328,6 @@ const Index = () => {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
