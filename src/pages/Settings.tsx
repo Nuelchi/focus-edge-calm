@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Shield, User, CreditCard, Bell, Shield as ShieldIcon, Smartphone, Eye, EyeOff, Save, Lightbulb, Target, Clock, Brain, Settings } from "lucide-react";
+import { Shield, User, CreditCard, Bell, Shield as ShieldIcon, Smartphone, Eye, EyeOff, Save, Lightbulb, Target, Clock, Brain, Settings as SettingsIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -587,7 +587,7 @@ const Settings = () => {
 
                   <div className="p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg">
                     <div className="flex items-center space-x-2 mb-3">
-                      <Settings className="h-6 w-6 text-orange-600" />
+                      <SettingsIcon className="h-6 w-6 text-orange-600" />
                       <h3 className="font-semibold text-orange-800">Environment Setup</h3>
                     </div>
                     <ul className="text-sm text-orange-700 space-y-2">
