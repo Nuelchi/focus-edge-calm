@@ -5,10 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import ProfileDropdown from "@/components/ProfileDropdown";
 import ChatWidget from "@/components/ChatWidget";
 import { Link } from "react-router-dom";
+import AddAppBlockDialog from "@/components/AddAppBlockDialog";
+import ScheduleBlockDialog from "@/components/ScheduleBlockDialog";
+import AnalyticsView from "@/components/AnalyticsView";
+import StartFocusDialog from "@/components/StartFocusDialog";
 
 const Dashboard = () => {
   const [activeSession, setActiveSession] = useState(null);
