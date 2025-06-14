@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+
 const Index = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+
   const features = [{
     icon: Brain,
     title: "AI-Powered Focus Assistant",
@@ -38,6 +40,7 @@ const Index = () => {
     description: "24/7 AI assistant for productivity tips, FAQs, and personalized guidance",
     color: "from-indigo-500 to-purple-600"
   }];
+
   const stats = [{
     number: "500K+",
     label: "Active Users",
@@ -55,7 +58,9 @@ const Index = () => {
     label: "Success Rate",
     icon: Target
   }];
-  return <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-mint-50">
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-mint-50">
       {/* Navigation */}
       <nav className="relative z-50 bg-white/80 backdrop-blur-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -70,7 +75,12 @@ const Index = () => {
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
               <a href="#features" className="text-gray-600 hover:text-gray-900 transition-colors">Features</a>
-              <a href="#pricing" className="text-gray-600 hover:text-gray-900 transition-colors">Pricing</a>
+              <button 
+                onClick={() => navigate("/pricing")} 
+                className="text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                Pricing
+              </button>
               <a href="#about" className="text-gray-600 hover:text-gray-900 transition-colors">About</a>
               <Button variant="outline" onClick={() => navigate("/login")}>Sign In</Button>
               <Button onClick={() => navigate("/signup")} className="bg-gradient-to-r from-blue-600 to-purple-600">
@@ -85,9 +95,15 @@ const Index = () => {
           </div>
 
           {/* Mobile Navigation */}
-          {isMobileMenuOpen && <div className="md:hidden pb-4 space-y-3">
+          {isMobileMenuOpen && (
+            <div className="md:hidden pb-4 space-y-3">
               <a href="#features" className="block text-gray-600 hover:text-gray-900">Features</a>
-              <a href="#pricing" className="block text-gray-600 hover:text-gray-900">Pricing</a>
+              <button 
+                onClick={() => navigate("/pricing")} 
+                className="block text-gray-600 hover:text-gray-900 text-left"
+              >
+                Pricing
+              </button>
               <a href="#about" className="block text-gray-600 hover:text-gray-900">About</a>
               <div className="flex flex-col space-y-2 pt-2">
                 <Button variant="outline" onClick={() => navigate("/login")}>Sign In</Button>
@@ -95,7 +111,8 @@ const Index = () => {
                   Get Started
                 </Button>
               </div>
-            </div>}
+            </div>
+          )}
         </div>
       </nav>
 
@@ -202,13 +219,15 @@ const Index = () => {
       <section className="py-16 bg-white/50 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-            {stats.map((stat, index) => <div key={index} className="text-center">
+            {stats.map((stat, index) => (
+              <div key={index} className="text-center">
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full text-white mb-4">
                   <stat.icon className="h-6 w-6" />
                 </div>
                 <div className="text-3xl font-bold text-gray-900">{stat.number}</div>
                 <div className="text-gray-600">{stat.label}</div>
-              </div>)}
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -233,7 +252,8 @@ const Index = () => {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => <Card key={index} className="group hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+            {features.map((feature, index) => (
+              <Card key={index} className="group hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl border-0 bg-white/80 backdrop-blur-sm">
                 <CardContent className="p-8 space-y-4">
                   <div className={`inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r ${feature.color} rounded-lg text-white group-hover:scale-110 transition-transform duration-300`}>
                     <feature.icon className="h-6 w-6" />
@@ -241,7 +261,8 @@ const Index = () => {
                   <h3 className="text-xl font-semibold text-gray-900">{feature.title}</h3>
                   <p className="text-gray-600 leading-relaxed">{feature.description}</p>
                 </CardContent>
-              </Card>)}
+              </Card>
+            ))}
           </div>
         </div>
       </section>
@@ -299,7 +320,12 @@ const Index = () => {
               <h4 className="font-semibold mb-4">Product</h4>
               <div className="space-y-2 text-gray-400">
                 <a href="#" className="block hover:text-white transition-colors">Features</a>
-                <a href="#" className="block hover:text-white transition-colors">Pricing</a>
+                <button 
+                  onClick={() => navigate("/pricing")} 
+                  className="block hover:text-white transition-colors text-left"
+                >
+                  Pricing
+                </button>
                 <a href="#" className="block hover:text-white transition-colors">Download</a>
               </div>
             </div>
@@ -328,6 +354,8 @@ const Index = () => {
           </div>
         </div>
       </footer>
-    </div>;
+    </div>
+  );
 };
+
 export default Index;
