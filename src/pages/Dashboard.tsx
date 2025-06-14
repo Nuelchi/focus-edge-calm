@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Shield, Plus, Clock, Smartphone, Lock, Unlock, Play, Pause, Settings, Bell, BarChart3, Target, Calendar, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,36 @@ const Dashboard = () => {
     { name: "YouTube", icon: "📺", blocked: false, category: "Entertainment" },
     { name: "WhatsApp", icon: "💬", blocked: true, category: "Messaging" }
   ]);
+
+  // Dialog states
+  const [addAppBlockOpen, setAddAppBlockOpen] = useState(false);
+  const [scheduleBlockOpen, setScheduleBlockOpen] = useState(false);
+  const [analyticsOpen, setAnalyticsOpen] = useState(false);
+  const [startFocusOpen, setStartFocusOpen] = useState(false);
+
+  // Mock data for blocks and schedules
+  const [availableBlocks, setAvailableBlocks] = useState([
+    {
+      id: "1",
+      name: "Social Media Block",
+      apps: ["Instagram", "Facebook", "TikTok"],
+      domains: ["facebook.com", "instagram.com"],
+      type: "mixed",
+      blocked: false
+    },
+    {
+      id: "2", 
+      name: "Entertainment",
+      apps: ["YouTube", "Netflix"],
+      domains: ["youtube.com", "netflix.com"],
+      type: "mixed",
+      blocked: false
+    }
+  ]);
+
+  const [schedules, setSchedules] = useState([]);
+  const [focusLogs, setFocusLogs] = useState([]);
+
   const { toast } = useToast();
 
   const menuItems = [
@@ -47,16 +78,21 @@ const Dashboard = () => {
     });
   };
 
+  const handleAddBlock = (newBlock: any) => {
+    setAvailableBlocks(prev => [...prev, newBlock]);
+  };
+
+  const handleScheduleBlock = (newSchedule: any) => {
+    setSchedules(prev => [...prev, newSchedule]);
+  };
+
+  const handleStartFocus = (newSession: any) => {
+    setActiveSession(newSession);
+    setFocusLogs(prev => [...prev, newSession]);
+  };
+
   const startFocusSession = () => {
-    setActiveSession({ 
-      duration: 25, 
-      remaining: 25 * 60, 
-      type: "Deep Work" 
-    });
-    toast({
-      title: "Focus session started! 🎯",
-      description: "Stay focused! You've got this 💪",
-    });
+    setStartFocusOpen(true);
   };
 
   return (
@@ -173,7 +209,7 @@ const Dashboard = () => {
                             <Pause className="h-4 w-4 mr-2" />
                             Pause
                           </Button>
-                          <Button variant="destructive">
+                          <Button variant="destructive" onClick={() => setActiveSession(null)}>
                             End Session
                           </Button>
                         </div>
@@ -200,15 +236,27 @@ const Dashboard = () => {
                     <CardTitle>Quick Actions</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <Button className="w-full justify-start" variant="outline">
+                    <Button 
+                      className="w-full justify-start" 
+                      variant="outline"
+                      onClick={() => setAddAppBlockOpen(true)}
+                    >
                       <Plus className="h-4 w-4 mr-2" />
                       Add New App Block
                     </Button>
-                    <Button className="w-full justify-start" variant="outline">
+                    <Button 
+                      className="w-full justify-start" 
+                      variant="outline"
+                      onClick={() => setScheduleBlockOpen(true)}
+                    >
                       <Calendar className="h-4 w-4 mr-2" />
                       Schedule Session
                     </Button>
-                    <Button className="w-full justify-start" variant="outline">
+                    <Button 
+                      className="w-full justify-start" 
+                      variant="outline"
+                      onClick={() => setAnalyticsOpen(true)}
+                    >
                       <BarChart3 className="h-4 w-4 mr-2" />
                       View Analytics
                     </Button>
@@ -272,6 +320,43 @@ const Dashboard = () => {
         </main>
         
         <ChatWidget />
+
+        {/* Dialog Components */}
+        <AddAppBlockDialog
+          open={addAppBlockOpen}
+          onOpenChange={setAddAppBlockOpen}
+          onAddBlock={handleAddBlock}
+        />
+
+        <ScheduleBlockDialog
+          open={scheduleBlockOpen}
+          onOpenChange={setScheduleBlockOpen}
+          availableBlocks={availableBlocks}
+          onScheduleBlock={handleScheduleBlock}
+        />
+
+        <StartFocusDialog
+          open={startFocusOpen}
+          onOpenChange={setStartFocusOpen}
+          availableBlocks={availableBlocks}
+          onStartFocus={handleStartFocus}
+        />
+
+        <Dialog open={analyticsOpen} onOpenChange={setAnalyticsOpen}>
+          <DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center space-x-2">
+                <BarChart3 className="h-5 w-5" />
+                <span>Analytics Dashboard</span>
+              </DialogTitle>
+            </DialogHeader>
+            <AnalyticsView 
+              focusLogs={focusLogs}
+              schedules={schedules}
+              blocks={availableBlocks}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
     </SidebarProvider>
   );
