@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Shield, Plus, Clock, Smartphone, Lock, Unlock, Play, Pause, Settings, Bell, BarChart3, Target, Calendar, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -79,7 +78,23 @@ const Dashboard = () => {
   };
 
   const handleAddBlock = (newBlock: any) => {
-    setAvailableBlocks(prev => [...prev, newBlock]);
+    const blockWithId = {
+      ...newBlock,
+      id: Date.now().toString(),
+      blocked: false
+    };
+    
+    console.log('Adding new block:', blockWithId);
+    setAvailableBlocks(prev => {
+      const updated = [...prev, blockWithId];
+      console.log('Updated available blocks:', updated);
+      return updated;
+    });
+    
+    toast({
+      title: "Block created successfully! 🎯",
+      description: `${newBlock.name} has been added to your available blocks.`,
+    });
   };
 
   const handleScheduleBlock = (newSchedule: any) => {
@@ -89,6 +104,80 @@ const Dashboard = () => {
   const handleStartFocus = (newSession: any) => {
     setActiveSession(newSession);
     setFocusLogs(prev => [...prev, newSession]);
+    
+    // Apply the selected block
+    const selectedBlock = availableBlocks.find(block => block.id === newSession.blockId);
+    if (selectedBlock) {
+      console.log('Activating block:', selectedBlock);
+      
+      // Set up auto-unlock based on session settings
+      if (newSession.unlockConditions) {
+        setupAutoUnlock(newSession);
+      }
+    }
+  };
+
+  const setupAutoUnlock = (session: any) => {
+    const { unlockConditions } = session;
+    
+    // If notifications are enabled, set up notification listener
+    if (unlockConditions.unlockOnNotification) {
+      console.log('Setting up notification-based unlock');
+      // Request notification permission if not already granted
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+      
+      // Listen for notifications (this would be implemented with actual notification API)
+      // For demo, we'll simulate this
+      if (unlockConditions.notificationSources.includes('any')) {
+        // Set up listener for any notification
+        setupNotificationListener(session);
+      }
+    }
+    
+    // Set up time-based unlock if specified and not in strict mode
+    if (unlockConditions.customTimeMinutes && !session.strictMode) {
+      console.log(`Setting up time-based unlock in ${unlockConditions.customTimeMinutes} minutes`);
+      setTimeout(() => {
+        unlockApps(session, 'time');
+      }, unlockConditions.customTimeMinutes * 60 * 1000);
+    }
+  };
+
+  const setupNotificationListener = (session: any) => {
+    // This is a simplified version - in a real app, you'd use the Notification API
+    // and potentially integrate with system notifications
+    console.log('Notification listener set up for session:', session.id);
+    
+    // Simulate notification unlock after 30 seconds for demo
+    setTimeout(() => {
+      unlockApps(session, 'notification');
+    }, 30000);
+  };
+
+  const unlockApps = (session: any, reason: 'time' | 'notification' | 'manual') => {
+    console.log(`Unlocking apps for session ${session.id} due to: ${reason}`);
+    
+    setActiveSession(prev => {
+      if (prev && prev.id === session.id) {
+        return {
+          ...prev,
+          status: 'unlocked',
+          unlockReason: reason,
+          unlockedAt: new Date().toISOString()
+        };
+      }
+      return prev;
+    });
+    
+    const reasonText = reason === 'notification' ? 'incoming notification' : 
+                      reason === 'time' ? 'time limit reached' : 'manual unlock';
+    
+    toast({
+      title: "Apps Unlocked! 🔓",
+      description: `Focus session ended due to ${reasonText}.`,
+    });
   };
 
   const startFocusSession = () => {
@@ -195,14 +284,27 @@ const Dashboard = () => {
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
                       <span>Focus Session</span>
-                      {activeSession && <Badge className="bg-green-100 text-green-800">Active</Badge>}
+                      {activeSession && (
+                        <Badge className={
+                          activeSession.status === 'unlocked' 
+                            ? "bg-orange-100 text-orange-800" 
+                            : "bg-green-100 text-green-800"
+                        }>
+                          {activeSession.status === 'unlocked' ? 'Unlocked' : 'Active'}
+                        </Badge>
+                      )}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     {activeSession ? (
                       <div className="text-center space-y-4">
                         <div className="text-4xl font-bold text-blue-600">25:00</div>
-                        <p className="text-gray-600">Deep Work Session</p>
+                        <p className="text-gray-600">{activeSession.title}</p>
+                        {activeSession.status === 'unlocked' && (
+                          <p className="text-sm text-orange-600">
+                            Unlocked due to: {activeSession.unlockReason}
+                          </p>
+                        )}
                         <Progress value={80} className="w-full" />
                         <div className="flex justify-center space-x-4">
                           <Button variant="outline">

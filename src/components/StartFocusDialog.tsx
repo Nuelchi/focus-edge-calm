@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Play, Target, Clock, Shield } from "lucide-react";
+import { Play, Target, Clock, Shield, Bell } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 
 interface StartFocusDialogProps {
@@ -32,7 +33,15 @@ const StartFocusDialog = ({ open, onOpenChange, availableBlocks, onStartFocus }:
   const [sessionTitle, setSessionTitle] = useState("");
   const [notes, setNotes] = useState("");
   const [strictMode, setStrictMode] = useState(true);
+  
+  // Unlock conditions
+  const [unlockOnNotification, setUnlockOnNotification] = useState(true);
+  const [customTimeMinutes, setCustomTimeMinutes] = useState(15);
+  const [notificationSources, setNotificationSources] = useState(['any']);
+  
   const { toast } = useToast();
+
+  console.log('Available blocks in StartFocusDialog:', availableBlocks);
 
   const handleStartSession = () => {
     if (!selectedBlock) {
@@ -55,13 +64,19 @@ const StartFocusDialog = ({ open, onOpenChange, availableBlocks, onStartFocus }:
       blockName: selectedBlockData?.name,
       sessionType: sessionType,
       duration: duration,
-      remaining: duration * 60, // convert to seconds
+      remaining: duration * 60,
       notes,
       strictMode,
       startedAt: new Date().toISOString(),
-      status: "active"
+      status: "active",
+      unlockConditions: {
+        unlockOnNotification,
+        customTimeMinutes: strictMode ? null : customTimeMinutes,
+        notificationSources
+      }
     };
 
+    console.log('Starting focus session:', newSession);
     onStartFocus(newSession);
     
     // Reset form
@@ -71,6 +86,9 @@ const StartFocusDialog = ({ open, onOpenChange, availableBlocks, onStartFocus }:
     setSessionTitle("");
     setNotes("");
     setStrictMode(true);
+    setUnlockOnNotification(true);
+    setCustomTimeMinutes(15);
+    setNotificationSources(['any']);
     
     toast({
       title: "Focus session started! 🎯",
@@ -85,7 +103,7 @@ const StartFocusDialog = ({ open, onOpenChange, availableBlocks, onStartFocus }:
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <Play className="h-5 w-5" />
@@ -134,25 +152,31 @@ const StartFocusDialog = ({ open, onOpenChange, availableBlocks, onStartFocus }:
                 <SelectValue placeholder="Choose what to block during focus" />
               </SelectTrigger>
               <SelectContent>
-                {availableBlocks.map((block) => (
-                  <SelectItem key={block.id} value={block.id}>
-                    <div className="flex items-center justify-between w-full">
-                      <span>{block.name}</span>
-                      <div className="flex space-x-1 ml-2">
-                        {block.apps?.length > 0 && (
-                          <Badge variant="outline" className="text-xs">
-                            {block.apps.length} apps
-                          </Badge>
-                        )}
-                        {block.domains?.length > 0 && (
-                          <Badge variant="outline" className="text-xs">
-                            {block.domains.length} sites
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
+                {availableBlocks.length === 0 ? (
+                  <SelectItem value="no-blocks" disabled>
+                    No blocks available - Create one first!
                   </SelectItem>
-                ))}
+                ) : (
+                  availableBlocks.map((block) => (
+                    <SelectItem key={block.id} value={block.id}>
+                      <div className="flex items-center justify-between w-full">
+                        <span>{block.name}</span>
+                        <div className="flex space-x-1 ml-2">
+                          {block.apps?.length > 0 && (
+                            <Badge variant="outline" className="text-xs">
+                              {block.apps.length} apps
+                            </Badge>
+                          )}
+                          {block.domains?.length > 0 && (
+                            <Badge variant="outline" className="text-xs">
+                              {block.domains.length} sites
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
             {selectedBlockData && (
@@ -200,6 +224,50 @@ const StartFocusDialog = ({ open, onOpenChange, availableBlocks, onStartFocus }:
             </div>
           </div>
 
+          {/* Unlock Conditions */}
+          <div className="border-t pt-4">
+            <Label className="text-base font-semibold">Unlock Conditions</Label>
+            <div className="space-y-3 mt-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="unlockOnNotification"
+                  checked={unlockOnNotification}
+                  onCheckedChange={setUnlockOnNotification}
+                />
+                <Label htmlFor="unlockOnNotification" className="flex items-center space-x-2">
+                  <Bell className="h-4 w-4" />
+                  <span>Unlock on notifications (Priority)</span>
+                </Label>
+              </div>
+              
+              {unlockOnNotification && (
+                <div className="ml-6 p-2 bg-blue-50 rounded text-sm">
+                  <p className="text-blue-700">
+                    Apps will unlock when you receive any notification, regardless of other settings.
+                  </p>
+                </div>
+              )}
+
+              {!strictMode && (
+                <div>
+                  <Label htmlFor="customTime">Custom unlock time (minutes)</Label>
+                  <Input
+                    id="customTime"
+                    type="number"
+                    min="1"
+                    max="60"
+                    value={customTimeMinutes}
+                    onChange={(e) => setCustomTimeMinutes(parseInt(e.target.value) || 15)}
+                    className="w-full mt-1"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Apps will unlock after this time if no notifications arrive
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
           <div>
             <Label htmlFor="notes">Session Notes (Optional)</Label>
             <Textarea
@@ -218,7 +286,7 @@ const StartFocusDialog = ({ open, onOpenChange, availableBlocks, onStartFocus }:
                 <span className="font-medium">Strict Mode Enabled</span>
               </div>
               <p className="text-sm text-orange-700 mt-1">
-                You won't be able to end this session early. Choose your duration carefully!
+                Apps will only unlock on notifications. Time-based unlock is disabled.
               </p>
             </div>
           )}
