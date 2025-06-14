@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Play, Target, Clock, Shield, Bell } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -232,7 +231,7 @@ const StartFocusDialog = ({ open, onOpenChange, availableBlocks, onStartFocus }:
                 <Checkbox
                   id="unlockOnNotification"
                   checked={unlockOnNotification}
-                  onCheckedChange={setUnlockOnNotification}
+                  onCheckedChange={(checked) => setUnlockOnNotification(checked === true)}
                 />
                 <Label htmlFor="unlockOnNotification" className="flex items-center space-x-2">
                   <Bell className="h-4 w-4" />
