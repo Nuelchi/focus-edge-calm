@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Play, Target, Clock, Shield, Bell } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -9,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import { notificationService } from "@/services/notificationService";
 
 interface StartFocusDialogProps {
   open: boolean;
@@ -41,6 +43,28 @@ const StartFocusDialog = ({ open, onOpenChange, availableBlocks, onStartFocus }:
   const { toast } = useToast();
 
   console.log('Available blocks in StartFocusDialog:', availableBlocks);
+
+  // Get available notification sources
+  const availableNotificationSources = notificationService.getAvailableNotificationSources();
+
+  const handleNotificationSourceToggle = (source: string) => {
+    setNotificationSources(prev => {
+      if (source === 'any') {
+        // If "any" is selected, clear all other selections
+        return ['any'];
+      } else {
+        // Remove "any" if it exists and toggle the specific source
+        const filtered = prev.filter(s => s !== 'any');
+        if (filtered.includes(source)) {
+          const newSources = filtered.filter(s => s !== source);
+          // If no sources left, default to "any"
+          return newSources.length === 0 ? ['any'] : newSources;
+        } else {
+          return [...filtered, source];
+        }
+      }
+    });
+  };
 
   const handleStartSession = () => {
     if (!selectedBlock) {
@@ -235,15 +259,51 @@ const StartFocusDialog = ({ open, onOpenChange, availableBlocks, onStartFocus }:
                 />
                 <Label htmlFor="unlockOnNotification" className="flex items-center space-x-2">
                   <Bell className="h-4 w-4" />
-                  <span>Unlock on notifications (Priority)</span>
+                  <span>Unlock on notifications</span>
                 </Label>
               </div>
               
               {unlockOnNotification && (
-                <div className="ml-6 p-2 bg-blue-50 rounded text-sm">
-                  <p className="text-blue-700">
-                    Apps will unlock when you receive any notification, regardless of other settings.
-                  </p>
+                <div className="ml-6 space-y-3">
+                  <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <Label className="text-sm font-medium text-blue-800 mb-2 block">
+                      Choose which apps can unlock your session:
+                    </Label>
+                    <div className="space-y-2">
+                      {availableNotificationSources.map((sourceOption) => (
+                        <div key={sourceOption.source} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`source-${sourceOption.source}`}
+                            checked={notificationSources.includes(sourceOption.source)}
+                            onCheckedChange={() => handleNotificationSourceToggle(sourceOption.source)}
+                          />
+                          <Label htmlFor={`source-${sourceOption.source}`} className="text-sm">
+                            <div>
+                              <span className="font-medium">{sourceOption.appName}</span>
+                              <p className="text-xs text-gray-600">{sourceOption.description}</p>
+                            </div>
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {notificationSources.length > 0 && !notificationSources.includes('any') && (
+                      <div className="mt-2 p-2 bg-white/60 rounded text-xs">
+                        <span className="text-blue-700 font-medium">Selected sources: </span>
+                        <span className="text-blue-600">
+                          {notificationSources.map(source => 
+                            availableNotificationSources.find(s => s.source === source)?.appName
+                          ).join(', ')}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {notificationSources.includes('any') && (
+                      <div className="mt-2 p-2 bg-white/60 rounded text-xs text-blue-700">
+                        ⚡ Any notification from any app will unlock your session
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 

@@ -140,13 +140,8 @@ class NotificationService {
     this.simulationTimer = setTimeout(() => {
       const randomNotification = simulatedNotifications[Math.floor(Math.random() * simulatedNotifications.length)];
       
-      // Check if this notification source should trigger unlock
-      const shouldUnlock = config.sources.includes('any') || 
-                          config.sources.includes(randomNotification.source) ||
-                          config.sources.includes(randomNotification.appName.toLowerCase()) ||
-                          (config.priority && randomNotification.priority === 'high') ||
-                          randomNotification.category === 'emergency' ||
-                          randomNotification.category === 'call';
+      // Enhanced logic to check if this notification source should trigger unlock
+      const shouldUnlock = this.shouldNotificationTriggerUnlock(randomNotification, config);
 
       if (shouldUnlock && config.unlockOnNotification) {
         const notificationEvent: NotificationEvent = {
@@ -162,6 +157,28 @@ class NotificationService {
         this.simulateNotifications(sessionId, config, callback);
       }
     }, delay);
+  }
+
+  private shouldNotificationTriggerUnlock(notification: any, config: NotificationConfig): boolean {
+    // If "any" is selected, any notification triggers unlock
+    if (config.sources.includes('any')) {
+      return true;
+    }
+
+    // Check if the notification source matches any of the selected sources
+    const matchesSource = config.sources.some(source => 
+      source === notification.source ||
+      source === notification.appName.toLowerCase() ||
+      (source === 'email' && ['gmail', 'outlook', 'email'].includes(notification.source))
+    );
+
+    // Always allow emergency and call notifications regardless of settings
+    const isUrgent = notification.category === 'emergency' || notification.category === 'call';
+
+    // Check priority settings
+    const matchesPriority = !config.priority || notification.priority === config.priority;
+
+    return matchesSource || isUrgent || (config.priority === 'high' && notification.priority === 'high');
   }
 
   // Enhanced method to manually trigger specific app notifications for testing
