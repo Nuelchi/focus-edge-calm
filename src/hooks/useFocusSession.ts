@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { nativeCapabilities } from "@/services/nativeCapabilities";
+import { notificationService, NotificationEvent } from "@/services/notificationService";
 
 interface FocusSession {
   id: string;
@@ -16,6 +17,7 @@ interface FocusSession {
     customTimeMinutes?: number;
     notificationSources: string[];
   };
+  lastNotification?: NotificationEvent;
 }
 
 export const useFocusSession = () => {
@@ -25,6 +27,18 @@ export const useFocusSession = () => {
 
   const handleStartFocus = async (newSession: FocusSession) => {
     console.log('Starting focus session:', newSession);
+    
+    // Request notification permission if unlock on notification is enabled
+    if (newSession.unlockConditions?.unlockOnNotification) {
+      const hasPermission = await notificationService.requestPermission();
+      if (!hasPermission) {
+        toast({
+          title: "Notification Permission Required",
+          description: "Please grant notification permission for unlock-on-notification to work.",
+          variant: "destructive"
+        });
+      }
+    }
     
     // Schedule the blocking rule with native capabilities
     const schedulingSuccess = await nativeCapabilities.scheduleBlocking({
@@ -65,44 +79,44 @@ export const useFocusSession = () => {
   const setupAutoUnlock = (session: FocusSession) => {
     const { unlockConditions } = session;
     
-    // If notifications are enabled, set up notification listener
+    // Set up notification-based unlock
     if (unlockConditions?.unlockOnNotification) {
-      console.log('Setting up notification-based unlock');
-      // Request notification permission if not already granted
-      if ('Notification' in window && Notification.permission === 'default') {
-        Notification.requestPermission();
-      }
+      console.log('Setting up notification-based unlock with sources:', unlockConditions.notificationSources);
       
-      // Listen for notifications (this would be implemented with actual notification API)
-      // For demo, we'll simulate this
-      if (unlockConditions.notificationSources.includes('any')) {
-        // Set up listener for any notification
-        setupNotificationListener(session);
-      }
+      notificationService.startListening(
+        session.id,
+        {
+          sources: unlockConditions.notificationSources,
+          unlockOnNotification: true,
+          priority: 'high' // Only high priority notifications trigger unlock by default
+        },
+        (notificationEvent: NotificationEvent) => {
+          console.log('Notification triggered unlock:', notificationEvent);
+          unlockApps(session, 'notification', notificationEvent);
+        }
+      );
     }
     
     // Set up time-based unlock if specified and not in strict mode
     if (unlockConditions?.customTimeMinutes && !session.strictMode) {
       console.log(`Setting up time-based unlock in ${unlockConditions.customTimeMinutes} minutes`);
       setTimeout(() => {
-        unlockApps(session, 'time');
+        // Only unlock if session is still active (not already unlocked by notification)
+        setActiveSession(current => {
+          if (current && current.id === session.id && current.status === 'active') {
+            unlockApps(session, 'time');
+          }
+          return current;
+        });
       }, unlockConditions.customTimeMinutes * 60 * 1000);
     }
   };
 
-  const setupNotificationListener = (session: FocusSession) => {
-    // This is a simplified version - in a real app, you'd use the Notification API
-    // and potentially integrate with system notifications
-    console.log('Notification listener set up for session:', session.id);
-    
-    // Simulate notification unlock after 30 seconds for demo
-    setTimeout(() => {
-      unlockApps(session, 'notification');
-    }, 30000);
-  };
-
-  const unlockApps = async (session: FocusSession, reason: 'time' | 'notification' | 'manual') => {
+  const unlockApps = async (session: FocusSession, reason: 'time' | 'notification' | 'manual', notificationEvent?: NotificationEvent) => {
     console.log(`Unlocking apps for session ${session.id} due to: ${reason}`);
+    
+    // Stop listening for notifications
+    notificationService.stopListening(session.id);
     
     // Update session status
     setActiveSession(prev => {
@@ -111,7 +125,8 @@ export const useFocusSession = () => {
           ...prev,
           status: 'unlocked',
           unlockReason: reason,
-          unlockedAt: new Date().toISOString()
+          unlockedAt: new Date().toISOString(),
+          lastNotification: notificationEvent
         };
       }
       return prev;
@@ -121,13 +136,22 @@ export const useFocusSession = () => {
     setFocusLogs(prev => 
       prev.map(log => 
         log.id === session.id 
-          ? { ...log, status: 'unlocked', unlockReason: reason, unlockedAt: new Date().toISOString() }
+          ? { 
+              ...log, 
+              status: 'unlocked', 
+              unlockReason: reason, 
+              unlockedAt: new Date().toISOString(),
+              lastNotification: notificationEvent
+            }
           : log
       )
     );
     
-    const reasonText = reason === 'notification' ? 'incoming notification' : 
-                      reason === 'time' ? 'time limit reached' : 'manual unlock';
+    const reasonText = reason === 'notification' 
+      ? `${notificationEvent?.source || 'incoming'} notification: "${notificationEvent?.title}"` 
+      : reason === 'time' 
+        ? 'time limit reached' 
+        : 'manual unlock';
     
     toast({
       title: "Apps Unlocked! 🔓",
@@ -146,11 +170,20 @@ export const useFocusSession = () => {
     return await nativeCapabilities.getUsageStats(timeRange);
   };
 
+  // Method to manually trigger notification for testing
+  const triggerTestNotification = (type: 'high-priority' | 'normal' | 'call' = 'normal') => {
+    if (activeSession && activeSession.unlockConditions?.unlockOnNotification) {
+      const testEvent = notificationService.triggerTestNotification(type);
+      unlockApps(activeSession, 'notification', testEvent);
+    }
+  };
+
   return {
     activeSession,
     focusLogs,
     handleStartFocus,
     endSession,
-    getUsageStats
+    getUsageStats,
+    triggerTestNotification
   };
 };

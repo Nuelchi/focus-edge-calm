@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import AddAppBlockDialog from "@/components/AddAppBlockDialog";
@@ -13,7 +14,7 @@ import { useFocusSession } from "@/hooks/useFocusSession";
 import { useAppBlocks } from "@/hooks/useAppBlocks";
 
 const Dashboard = () => {
-  const { activeSession, focusLogs, handleStartFocus, endSession } = useFocusSession();
+  const { activeSession, focusLogs, handleStartFocus, endSession, triggerTestNotification } = useFocusSession();
   const { blockedApps, availableBlocks, toggleAppBlock, handleAddBlock } = useAppBlocks();
   
   // Dialog states
@@ -41,6 +42,7 @@ const Dashboard = () => {
           <FocusSession 
             activeSession={activeSession} 
             onEndSession={endSession}
+            onTestNotification={triggerTestNotification}
           />
         </div>
 

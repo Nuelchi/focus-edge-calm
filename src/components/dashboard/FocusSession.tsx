@@ -1,5 +1,5 @@
 
-import { Pause } from "lucide-react";
+import { Pause, Bell, TestTube } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -8,22 +8,31 @@ import { Button } from "@/components/ui/button";
 interface FocusSessionProps {
   activeSession: any;
   onEndSession: () => void;
+  onTestNotification?: (type: 'high-priority' | 'normal' | 'call') => void;
 }
 
-const FocusSession = ({ activeSession, onEndSession }: FocusSessionProps) => {
+const FocusSession = ({ activeSession, onEndSession, onTestNotification }: FocusSessionProps) => {
   return (
     <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span>Focus Session</span>
           {activeSession && (
-            <Badge className={
-              activeSession.status === 'unlocked' 
-                ? "bg-orange-100 text-orange-800" 
-                : "bg-green-100 text-green-800"
-            }>
-              {activeSession.status === 'unlocked' ? 'Unlocked' : 'Active'}
-            </Badge>
+            <div className="flex items-center space-x-2">
+              {activeSession.unlockConditions?.unlockOnNotification && (
+                <Badge variant="outline" className="text-xs">
+                  <Bell className="h-3 w-3 mr-1" />
+                  Unlock on notifications
+                </Badge>
+              )}
+              <Badge className={
+                activeSession.status === 'unlocked' 
+                  ? "bg-orange-100 text-orange-800" 
+                  : "bg-green-100 text-green-800"
+              }>
+                {activeSession.status === 'unlocked' ? 'Unlocked' : 'Active'}
+              </Badge>
+            </div>
           )}
         </CardTitle>
       </CardHeader>
@@ -32,21 +41,63 @@ const FocusSession = ({ activeSession, onEndSession }: FocusSessionProps) => {
           <div className="text-center space-y-4">
             <div className="text-4xl font-bold text-blue-600">25:00</div>
             <p className="text-gray-600">{activeSession.title}</p>
+            
             {activeSession.status === 'unlocked' && (
-              <p className="text-sm text-orange-600">
-                Unlocked due to: {activeSession.unlockReason}
-              </p>
+              <div className="p-3 bg-orange-50 rounded-lg">
+                <p className="text-sm text-orange-600 font-medium">
+                  Unlocked due to: {activeSession.unlockReason}
+                </p>
+                {activeSession.lastNotification && (
+                  <div className="text-xs text-orange-700 mt-1">
+                    <p><strong>{activeSession.lastNotification.source}:</strong> {activeSession.lastNotification.title}</p>
+                    <p className="text-gray-600">{activeSession.lastNotification.body}</p>
+                  </div>
+                )}
+              </div>
             )}
+            
             <Progress value={80} className="w-full" />
-            <div className="flex justify-center space-x-4">
-              <Button variant="outline">
+            
+            <div className="flex flex-wrap justify-center gap-2">
+              <Button variant="outline" size="sm">
                 <Pause className="h-4 w-4 mr-2" />
                 Pause
               </Button>
-              <Button variant="destructive" onClick={onEndSession}>
+              <Button variant="destructive" size="sm" onClick={onEndSession}>
                 End Session
               </Button>
+              
+              {/* Test notification buttons for demo */}
+              {activeSession.status === 'active' && activeSession.unlockConditions?.unlockOnNotification && onTestNotification && (
+                <>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => onTestNotification('normal')}
+                    className="text-xs"
+                  >
+                    <TestTube className="h-3 w-3 mr-1" />
+                    Test Email
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => onTestNotification('call')}
+                    className="text-xs"
+                  >
+                    <TestTube className="h-3 w-3 mr-1" />
+                    Test Call
+                  </Button>
+                </>
+              )}
             </div>
+            
+            {activeSession.unlockConditions?.unlockOnNotification && activeSession.status === 'active' && (
+              <div className="text-xs text-blue-600 mt-2">
+                <p>📱 Listening for notifications...</p>
+                <p>Priority notifications will unlock your apps</p>
+              </div>
+            )}
           </div>
         ) : (
           <div className="text-center space-y-4">
