@@ -7,10 +7,13 @@ export interface NotificationConfig {
 
 export interface NotificationEvent {
   source: string;
+  appName: string;
+  packageName?: string;
   title: string;
   body: string;
   timestamp: string;
   priority: 'high' | 'normal' | 'low';
+  category?: 'message' | 'call' | 'email' | 'social' | 'work' | 'emergency';
 }
 
 class NotificationService {
@@ -64,13 +67,71 @@ class NotificationService {
   }
 
   private simulateNotifications(sessionId: string, config: NotificationConfig, callback: (event: NotificationEvent) => void): void {
-    // Simulate different types of notifications that might arrive
+    // Enhanced simulation with more detailed app information
     const simulatedNotifications = [
-      { source: 'whatsapp', title: 'New Message', body: 'Hey, are you free?', priority: 'high' as const },
-      { source: 'email', title: 'Important Email', body: 'Meeting reminder', priority: 'normal' as const },
-      { source: 'calendar', title: 'Meeting in 15 min', body: 'Daily standup', priority: 'high' as const },
-      { source: 'slack', title: 'Slack notification', body: 'You have been mentioned', priority: 'normal' as const },
-      { source: 'phone', title: 'Incoming Call', body: 'Mom calling', priority: 'high' as const },
+      { 
+        source: 'whatsapp', 
+        appName: 'WhatsApp', 
+        packageName: 'com.whatsapp',
+        title: 'New Message from Mom', 
+        body: 'Hey, are you free to talk?', 
+        priority: 'high' as const,
+        category: 'message' as const
+      },
+      { 
+        source: 'email', 
+        appName: 'Gmail', 
+        packageName: 'com.google.android.gm',
+        title: 'Important: Meeting Reminder', 
+        body: 'Your 3 PM meeting starts in 15 minutes', 
+        priority: 'high' as const,
+        category: 'work' as const
+      },
+      { 
+        source: 'calendar', 
+        appName: 'Google Calendar', 
+        packageName: 'com.google.android.calendar',
+        title: 'Meeting in 5 minutes', 
+        body: 'Daily standup with the team', 
+        priority: 'high' as const,
+        category: 'work' as const
+      },
+      { 
+        source: 'slack', 
+        appName: 'Slack', 
+        packageName: 'com.slack',
+        title: 'Direct Message', 
+        body: 'You have been mentioned in #urgent-channel', 
+        priority: 'high' as const,
+        category: 'work' as const
+      },
+      { 
+        source: 'phone', 
+        appName: 'Phone', 
+        packageName: 'com.android.dialer',
+        title: 'Incoming Call', 
+        body: 'Call from: Mom (+1 555-0123)', 
+        priority: 'high' as const,
+        category: 'call' as const
+      },
+      { 
+        source: 'instagram', 
+        appName: 'Instagram', 
+        packageName: 'com.instagram.android',
+        title: 'New follower', 
+        body: 'john_doe started following you', 
+        priority: 'normal' as const,
+        category: 'social' as const
+      },
+      { 
+        source: 'emergency', 
+        appName: 'Emergency Alerts', 
+        packageName: 'com.android.emergency',
+        title: 'Emergency Alert', 
+        body: 'Severe weather warning in your area', 
+        priority: 'high' as const,
+        category: 'emergency' as const
+      }
     ];
 
     // Randomly trigger a notification between 10-60 seconds for demo purposes
@@ -82,7 +143,10 @@ class NotificationService {
       // Check if this notification source should trigger unlock
       const shouldUnlock = config.sources.includes('any') || 
                           config.sources.includes(randomNotification.source) ||
-                          (config.priority && randomNotification.priority === 'high');
+                          config.sources.includes(randomNotification.appName.toLowerCase()) ||
+                          (config.priority && randomNotification.priority === 'high') ||
+                          randomNotification.category === 'emergency' ||
+                          randomNotification.category === 'call';
 
       if (shouldUnlock && config.unlockOnNotification) {
         const notificationEvent: NotificationEvent = {
@@ -100,18 +164,73 @@ class NotificationService {
     }, delay);
   }
 
-  // Method to manually trigger a notification for testing
-  triggerTestNotification(type: 'high-priority' | 'normal' | 'call' = 'normal'): NotificationEvent {
+  // Enhanced method to manually trigger specific app notifications for testing
+  triggerTestNotification(type: 'high-priority' | 'normal' | 'call' | 'whatsapp' | 'work-email' = 'normal'): NotificationEvent {
     const testNotifications = {
-      'high-priority': { source: 'emergency', title: 'Urgent!', body: 'Emergency contact', priority: 'high' as const },
-      'normal': { source: 'email', title: 'Test Email', body: 'This is a test notification', priority: 'normal' as const },
-      'call': { source: 'phone', title: 'Incoming Call', body: 'Test caller', priority: 'high' as const }
+      'high-priority': { 
+        source: 'emergency', 
+        appName: 'Emergency Alerts', 
+        packageName: 'com.android.emergency',
+        title: 'Emergency Alert!', 
+        body: 'Critical system notification', 
+        priority: 'high' as const,
+        category: 'emergency' as const
+      },
+      'normal': { 
+        source: 'email', 
+        appName: 'Gmail', 
+        packageName: 'com.google.android.gm',
+        title: 'Test Email', 
+        body: 'This is a test notification from Gmail', 
+        priority: 'normal' as const,
+        category: 'email' as const
+      },
+      'call': { 
+        source: 'phone', 
+        appName: 'Phone', 
+        packageName: 'com.android.dialer',
+        title: 'Incoming Call', 
+        body: 'Call from: Test Contact', 
+        priority: 'high' as const,
+        category: 'call' as const
+      },
+      'whatsapp': { 
+        source: 'whatsapp', 
+        appName: 'WhatsApp', 
+        packageName: 'com.whatsapp',
+        title: 'New WhatsApp Message', 
+        body: 'Hey! Important message here', 
+        priority: 'high' as const,
+        category: 'message' as const
+      },
+      'work-email': { 
+        source: 'email', 
+        appName: 'Outlook', 
+        packageName: 'com.microsoft.office.outlook',
+        title: 'Urgent: Project Deadline', 
+        body: 'The client needs the report by 5 PM today', 
+        priority: 'high' as const,
+        category: 'work' as const
+      }
     };
 
     return {
       ...testNotifications[type],
       timestamp: new Date().toISOString()
     };
+  }
+
+  // Method to get available notification sources for configuration
+  getAvailableNotificationSources(): Array<{source: string, appName: string, description: string}> {
+    return [
+      { source: 'any', appName: 'Any App', description: 'All notifications from any app' },
+      { source: 'whatsapp', appName: 'WhatsApp', description: 'Messages from WhatsApp' },
+      { source: 'phone', appName: 'Phone', description: 'Incoming calls' },
+      { source: 'email', appName: 'Email Apps', description: 'Gmail, Outlook, etc.' },
+      { source: 'slack', appName: 'Slack', description: 'Work messages from Slack' },
+      { source: 'calendar', appName: 'Calendar', description: 'Meeting reminders' },
+      { source: 'emergency', appName: 'Emergency', description: 'Emergency alerts only' },
+    ];
   }
 }
 

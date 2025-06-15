@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { nativeCapabilities } from "@/services/nativeCapabilities";
@@ -148,7 +147,7 @@ export const useFocusSession = () => {
     );
     
     const reasonText = reason === 'notification' 
-      ? `${notificationEvent?.source || 'incoming'} notification: "${notificationEvent?.title}"` 
+      ? `${notificationEvent?.appName || notificationEvent?.source || 'app'} notification: "${notificationEvent?.title}"` 
       : reason === 'time' 
         ? 'time limit reached' 
         : 'manual unlock';
@@ -170,8 +169,8 @@ export const useFocusSession = () => {
     return await nativeCapabilities.getUsageStats(timeRange);
   };
 
-  // Method to manually trigger notification for testing
-  const triggerTestNotification = (type: 'high-priority' | 'normal' | 'call' = 'normal') => {
+  // Enhanced method to manually trigger notification for testing with more options
+  const triggerTestNotification = (type: 'high-priority' | 'normal' | 'call' | 'whatsapp' | 'work-email' = 'normal') => {
     if (activeSession && activeSession.unlockConditions?.unlockOnNotification) {
       const testEvent = notificationService.triggerTestNotification(type);
       unlockApps(activeSession, 'notification', testEvent);

@@ -1,5 +1,5 @@
 
-import { Pause, Bell, TestTube } from "lucide-react";
+import { Pause, Bell, TestTube, Smartphone, Mail, MessageCircle, Calendar, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -8,8 +8,35 @@ import { Button } from "@/components/ui/button";
 interface FocusSessionProps {
   activeSession: any;
   onEndSession: () => void;
-  onTestNotification?: (type: 'high-priority' | 'normal' | 'call') => void;
+  onTestNotification?: (type: 'high-priority' | 'normal' | 'call' | 'whatsapp' | 'work-email') => void;
 }
+
+const getAppIcon = (source: string, category?: string) => {
+  switch (source) {
+    case 'phone':
+      return <Smartphone className="h-4 w-4" />;
+    case 'whatsapp':
+      return <MessageCircle className="h-4 w-4" />;
+    case 'email':
+    case 'gmail':
+    case 'outlook':
+      return <Mail className="h-4 w-4" />;
+    case 'calendar':
+      return <Calendar className="h-4 w-4" />;
+    case 'emergency':
+      return <AlertTriangle className="h-4 w-4" />;
+    default:
+      return <Bell className="h-4 w-4" />;
+  }
+};
+
+const getAppColor = (category?: string, priority?: string) => {
+  if (category === 'emergency' || priority === 'high') return 'text-red-600';
+  if (category === 'call') return 'text-blue-600';
+  if (category === 'work') return 'text-purple-600';
+  if (category === 'message' || category === 'social') return 'text-green-600';
+  return 'text-gray-600';
+};
 
 const FocusSession = ({ activeSession, onEndSession, onTestNotification }: FocusSessionProps) => {
   return (
@@ -43,14 +70,53 @@ const FocusSession = ({ activeSession, onEndSession, onTestNotification }: Focus
             <p className="text-gray-600">{activeSession.title}</p>
             
             {activeSession.status === 'unlocked' && (
-              <div className="p-3 bg-orange-50 rounded-lg">
-                <p className="text-sm text-orange-600 font-medium">
-                  Unlocked due to: {activeSession.unlockReason}
-                </p>
+              <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
+                <div className="flex items-center justify-center mb-2">
+                  {activeSession.lastNotification && getAppIcon(
+                    activeSession.lastNotification.source, 
+                    activeSession.lastNotification.category
+                  )}
+                  <p className="text-sm text-orange-600 font-medium ml-2">
+                    Unlocked by: {activeSession.lastNotification?.appName || 'Notification'}
+                  </p>
+                </div>
+                
                 {activeSession.lastNotification && (
-                  <div className="text-xs text-orange-700 mt-1">
-                    <p><strong>{activeSession.lastNotification.source}:</strong> {activeSession.lastNotification.title}</p>
-                    <p className="text-gray-600">{activeSession.lastNotification.body}</p>
+                  <div className="text-sm space-y-2">
+                    <div className="bg-white/60 rounded-md p-2">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className={`font-medium ${getAppColor(
+                          activeSession.lastNotification.category, 
+                          activeSession.lastNotification.priority
+                        )}`}>
+                          {activeSession.lastNotification.appName}
+                        </span>
+                        <Badge variant="secondary" className="text-xs">
+                          {activeSession.lastNotification.priority}
+                        </Badge>
+                      </div>
+                      <p className="font-medium text-gray-800">
+                        {activeSession.lastNotification.title}
+                      </p>
+                      <p className="text-gray-600 text-xs">
+                        {activeSession.lastNotification.body}
+                      </p>
+                      {activeSession.lastNotification.packageName && (
+                        <p className="text-gray-400 text-xs mt-1">
+                          {activeSession.lastNotification.packageName}
+                        </p>
+                      )}
+                    </div>
+                    
+                    <div className="text-xs text-orange-700">
+                      <p>
+                        📱 {activeSession.lastNotification.category === 'call' ? 'Incoming call' : 
+                             activeSession.lastNotification.category === 'emergency' ? 'Emergency alert' :
+                             activeSession.lastNotification.category === 'work' ? 'Work notification' :
+                             'High priority notification'} received at{' '}
+                        {new Date(activeSession.lastNotification.timestamp).toLocaleTimeString()}
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>
@@ -67,17 +133,17 @@ const FocusSession = ({ activeSession, onEndSession, onTestNotification }: Focus
                 End Session
               </Button>
               
-              {/* Test notification buttons for demo */}
+              {/* Enhanced test notification buttons */}
               {activeSession.status === 'active' && activeSession.unlockConditions?.unlockOnNotification && onTestNotification && (
                 <>
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => onTestNotification('normal')}
+                    onClick={() => onTestNotification('whatsapp')}
                     className="text-xs"
                   >
-                    <TestTube className="h-3 w-3 mr-1" />
-                    Test Email
+                    <MessageCircle className="h-3 w-3 mr-1" />
+                    WhatsApp
                   </Button>
                   <Button 
                     variant="outline" 
@@ -85,8 +151,17 @@ const FocusSession = ({ activeSession, onEndSession, onTestNotification }: Focus
                     onClick={() => onTestNotification('call')}
                     className="text-xs"
                   >
-                    <TestTube className="h-3 w-3 mr-1" />
-                    Test Call
+                    <Smartphone className="h-3 w-3 mr-1" />
+                    Call
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => onTestNotification('work-email')}
+                    className="text-xs"
+                  >
+                    <Mail className="h-3 w-3 mr-1" />
+                    Work Email
                   </Button>
                 </>
               )}
@@ -94,8 +169,13 @@ const FocusSession = ({ activeSession, onEndSession, onTestNotification }: Focus
             
             {activeSession.unlockConditions?.unlockOnNotification && activeSession.status === 'active' && (
               <div className="text-xs text-blue-600 mt-2">
-                <p>📱 Listening for notifications...</p>
-                <p>Priority notifications will unlock your apps</p>
+                <p>📱 Monitoring notifications from specified apps...</p>
+                <p>High priority notifications and calls will unlock your apps</p>
+                {activeSession.unlockConditions.notificationSources?.length > 0 && (
+                  <p className="mt-1 text-gray-600">
+                    Watching: {activeSession.unlockConditions.notificationSources.join(', ')}
+                  </p>
+                )}
               </div>
             )}
           </div>
