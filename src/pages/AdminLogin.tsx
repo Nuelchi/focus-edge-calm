@@ -20,11 +20,11 @@ const AdminLogin = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Check if email contains @focusEdgeAdmin.com
-    if (!email.includes("@focusEdgeAdmin.com")) {
+    // Check if email contains @FocusGuardAdmin.com
+    if (!email.includes("@FocusGuardAdmin.com")) {
       toast({
         title: "Access Denied",
-        description: "Admin access requires a @focusEdgeAdmin.com email address.",
+        description: "Admin access requires a @FocusGuardAdmin.com email address.",
         variant: "destructive"
       });
       return;
@@ -59,7 +59,7 @@ const AdminLogin = () => {
             <div className="flex items-center justify-center space-x-2">
               <Shield className="h-8 w-8 text-blue-600" />
               <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                focusEdge
+                FocusGuard
               </span>
             </div>
             
@@ -74,14 +74,14 @@ const AdminLogin = () => {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="admin@focusEdgeAdmin.com"
+                  placeholder="admin@FocusGuardAdmin.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   className="h-11"
                 />
                 <p className="text-xs text-gray-500">
-                  Must be a @focusEdgeAdmin.com email address
+                  Must be a @FocusGuardAdmin.com email address
                 </p>
               </div>
               

@@ -68,7 +68,7 @@ const Index = () => {
             <div className="flex items-center space-x-2">
               <Shield className="h-8 w-8 text-blue-600" />
               <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                focusEdge
+                FocusGuard
               </span>
             </div>
             
@@ -132,7 +132,7 @@ const Index = () => {
                   </span>
                 </h1>
                 <p className="text-xl text-gray-600 leading-relaxed">
-                  focusEdge is your calm, intelligent productivity companion powered by AI. 
+                  FocusGuard is your calm, intelligent productivity companion powered by AI. 
                   Block distracting apps, schedule smart focus sessions, and build better habits 
                   without feeling restricted.
                 </p>
@@ -309,7 +309,7 @@ const Index = () => {
             <div className="space-y-4">
               <div className="flex items-center space-x-2">
                 <Shield className="h-6 w-6 text-blue-400" />
-                <span className="text-xl font-bold">focusEdge</span>
+                <span className="text-xl font-bold">FocusGuard</span>
               </div>
               <p className="text-gray-400">
                 AI-powered focus and productivity for the modern world.
@@ -350,7 +350,7 @@ const Index = () => {
           </div>
           
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 focusEdge. All rights reserved. Powered by AI.</p>
+            <p>&copy; 2024 FocusGuard. All rights reserved. Powered by AI.</p>
           </div>
         </div>
       </footer>
