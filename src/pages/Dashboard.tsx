@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import AddAppBlockDialog from "@/components/AddAppBlockDialog";
@@ -9,6 +8,7 @@ import StatsOverview from "@/components/dashboard/StatsOverview";
 import FocusSession from "@/components/dashboard/FocusSession";
 import QuickActions from "@/components/dashboard/QuickActions";
 import AppManagement from "@/components/dashboard/AppManagement";
+import NativeStatus from "@/components/dashboard/NativeStatus";
 import { useFocusSession } from "@/hooks/useFocusSession";
 import { useAppBlocks } from "@/hooks/useAppBlocks";
 
@@ -45,11 +45,15 @@ const Dashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        <QuickActions
-          onAddAppBlock={() => setAddAppBlockOpen(true)}
-          onScheduleBlock={() => setScheduleBlockOpen(true)}
-          onViewAnalytics={() => setAnalyticsOpen(true)}
-        />
+        <div className="space-y-4">
+          <QuickActions
+            onAddAppBlock={() => setAddAppBlockOpen(true)}
+            onScheduleBlock={() => setScheduleBlockOpen(true)}
+            onViewAnalytics={() => setAnalyticsOpen(true)}
+          />
+          
+          <NativeStatus />
+        </div>
       </div>
 
       {/* App Management */}
