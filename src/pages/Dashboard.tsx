@@ -13,7 +13,7 @@ import { useFocusSession } from "@/hooks/useFocusSession";
 import { useAppBlocks } from "@/hooks/useAppBlocks";
 
 const Dashboard = () => {
-  const { activeSession, handleStartFocus, endSession } = useFocusSession();
+  const { activeSession, focusLogs, handleStartFocus, endSession } = useFocusSession();
   const { blockedApps, availableBlocks, toggleAppBlock, handleAddBlock } = useAppBlocks();
   
   // Dialog states
@@ -79,7 +79,11 @@ const Dashboard = () => {
           <DialogHeader>
             <DialogTitle>Analytics Dashboard</DialogTitle>
           </DialogHeader>
-          <AnalyticsView />
+          <AnalyticsView 
+            focusLogs={focusLogs}
+            schedules={schedules}
+            blocks={availableBlocks}
+          />
         </DialogContent>
       </Dialog>
     </AppLayout>
