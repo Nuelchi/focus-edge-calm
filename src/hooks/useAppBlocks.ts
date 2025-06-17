@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { nativeCapabilities, AppInfo } from "@/services/nativeCapabilities";
@@ -18,42 +17,111 @@ interface Block {
   domains: string[];
   type: string;
   blocked: boolean;
+  createdAt: string;
+  lastModified?: string;
 }
 
 export const useAppBlocks = () => {
-  const [blockedApps, setBlockedApps] = useState<App[]>([
-    { name: "Instagram", icon: "📷", blocked: true, category: "Social Media", packageName: "com.instagram.android" },
-    { name: "YouTube", icon: "📺", blocked: false, category: "Entertainment", packageName: "com.google.android.youtube" },
-    { name: "WhatsApp", icon: "💬", blocked: true, category: "Messaging", packageName: "com.whatsapp" }
-  ]);
-
-  const [availableBlocks, setAvailableBlocks] = useState<Block[]>([
-    {
-      id: "1",
-      name: "Social Media Block",
-      apps: ["Instagram", "Facebook", "TikTok"],
-      domains: ["facebook.com", "instagram.com"],
-      type: "mixed",
-      blocked: false
-    },
-    {
-      id: "2", 
-      name: "Entertainment",
-      apps: ["YouTube", "Netflix"],
-      domains: ["youtube.com", "netflix.com"],
-      type: "mixed",
-      blocked: false
-    }
-  ]);
-
+  const [blockedApps, setBlockedApps] = useState<App[]>([]);
+  const [availableBlocks, setAvailableBlocks] = useState<Block[]>([]);
   const [installedApps, setInstalledApps] = useState<AppInfo[]>([]);
   const [permissionsGranted, setPermissionsGranted] = useState(false);
-
   const { toast } = useToast();
 
   useEffect(() => {
     initializeNativeCapabilities();
+    // Load saved blocks from storage
+    loadSavedBlocks();
   }, []);
+
+  // Check for app changes periodically
+  useEffect(() => {
+    const checkInterval = setInterval(async () => {
+      const currentApps = await nativeCapabilities.getInstalledApps();
+      handleAppChanges(currentApps);
+    }, 30000); // Check every 30 seconds
+
+    return () => clearInterval(checkInterval);
+  }, [installedApps, availableBlocks]);
+
+  const loadSavedBlocks = async () => {
+    try {
+      const savedBlocks = localStorage.getItem('appBlocks');
+      if (savedBlocks) {
+        setAvailableBlocks(JSON.parse(savedBlocks));
+      }
+    } catch (error) {
+      console.error('Failed to load saved blocks:', error);
+    }
+  };
+
+  const saveBlocks = (blocks: Block[]) => {
+    try {
+      localStorage.setItem('appBlocks', JSON.stringify(blocks));
+    } catch (error) {
+      console.error('Failed to save blocks:', error);
+    }
+  };
+
+  const handleAppChanges = (currentApps: AppInfo[]) => {
+    // Check for newly installed apps that were previously blocked
+    const newApps = currentApps.filter(app => 
+      !installedApps.some(installed => installed.packageName === app.packageName)
+    );
+
+    // Check for uninstalled apps
+    const uninstalledApps = installedApps.filter(app =>
+      !currentApps.some(current => current.packageName === app.packageName)
+    );
+
+    // Update blocks for newly installed apps
+    if (newApps.length > 0) {
+      setAvailableBlocks(prevBlocks => {
+        const updatedBlocks = prevBlocks.map(block => {
+          const hasNewApp = newApps.some(app => block.apps.includes(app.name));
+          if (hasNewApp) {
+            return {
+              ...block,
+              lastModified: new Date().toISOString()
+            };
+          }
+          return block;
+        });
+        saveBlocks(updatedBlocks);
+        return updatedBlocks;
+      });
+
+      toast({
+        title: "New Apps Detected",
+        description: `${newApps.length} new app(s) installed. Blocking rules have been updated.`,
+      });
+    }
+
+    // Handle uninstalled apps
+    if (uninstalledApps.length > 0) {
+      setAvailableBlocks(prevBlocks => {
+        const updatedBlocks = prevBlocks.map(block => {
+          const hasUninstalledApp = uninstalledApps.some(app => block.apps.includes(app.name));
+          if (hasUninstalledApp) {
+            return {
+              ...block,
+              lastModified: new Date().toISOString()
+            };
+          }
+          return block;
+        });
+        saveBlocks(updatedBlocks);
+        return updatedBlocks;
+      });
+
+      toast({
+        title: "Apps Uninstalled",
+        description: `${uninstalledApps.length} app(s) were uninstalled. Blocking rules have been updated.`,
+      });
+    }
+
+    setInstalledApps(currentApps);
+  };
 
   const initializeNativeCapabilities = async () => {
     console.log('Initializing native capabilities...');
@@ -135,13 +203,13 @@ export const useAppBlocks = () => {
     const blockWithId = {
       ...newBlock,
       id: Date.now().toString(),
-      blocked: false
+      blocked: false,
+      createdAt: new Date().toISOString()
     };
     
-    console.log('Adding new block:', blockWithId);
     setAvailableBlocks(prev => {
       const updated = [...prev, blockWithId];
-      console.log('Updated available blocks:', updated);
+      saveBlocks(updated);
       return updated;
     });
     
@@ -168,11 +236,13 @@ export const useAppBlocks = () => {
     ]);
 
     if (appsBlocked && domainsBlocked) {
-      setAvailableBlocks(prev => 
-        prev.map(b => 
-          b.id === blockId ? { ...b, blocked: true } : b
-        )
-      );
+      setAvailableBlocks(prev => {
+        const updated = prev.map(b => 
+          b.id === blockId ? { ...b, blocked: true, lastModified: new Date().toISOString() } : b
+        );
+        saveBlocks(updated);
+        return updated;
+      });
       
       toast({
         title: "Block activated! 🚫",
@@ -204,11 +274,13 @@ export const useAppBlocks = () => {
     ]);
 
     if (appsUnblocked && domainsUnblocked) {
-      setAvailableBlocks(prev => 
-        prev.map(b => 
-          b.id === blockId ? { ...b, blocked: false } : b
-        )
-      );
+      setAvailableBlocks(prev => {
+        const updated = prev.map(b => 
+          b.id === blockId ? { ...b, blocked: false, lastModified: new Date().toISOString() } : b
+        );
+        saveBlocks(updated);
+        return updated;
+      });
       
       toast({
         title: "Block deactivated! ✅",

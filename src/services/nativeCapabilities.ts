@@ -1,5 +1,6 @@
-
 import { Capacitor } from '@capacitor/core';
+import { App } from '@capacitor/app';
+import { Device } from '@capacitor/device';
 
 export interface AppInfo {
   name: string;
@@ -22,58 +23,120 @@ export interface BlockingRule {
 
 class NativeCapabilitiesService {
   private isNative = Capacitor.isNativePlatform();
+  private hasPermission: boolean = false;
+
+  constructor() {
+    this.isNative = Capacitor.isNativePlatform();
+  }
+
+  isRunningNatively(): boolean {
+    return this.isNative;
+  }
+
+  async openSettings(): Promise<void> {
+    try {
+      await App.openSettings();
+    } catch (error) {
+      console.error('Error opening settings:', error);
+    }
+  }
 
   async requestPermissions(): Promise<boolean> {
-    if (!this.isNative) {
-      console.log('Running in web mode - permissions simulation');
-      return true;
-    }
+    if (!this.isNative) return true;
 
     try {
-      // Request device admin permissions for app blocking
-      // Request usage access permissions for monitoring
-      // Request accessibility permissions for domain blocking
-      console.log('Requesting native permissions...');
-      return true;
+      // For Android
+      if (Capacitor.getPlatform() === 'android') {
+        // Request app usage access permission
+        const result = await Device.requestPermissions({
+          permissions: ['usageStats']
+        });
+        
+        if (result.usageStats !== 'granted') {
+          // Open settings if permission not granted
+          await this.openSettings();
+          return false;
+        }
+        
+        this.hasPermission = true;
+        return true;
+      }
+      
+      // For iOS
+      if (Capacitor.getPlatform() === 'ios') {
+        // Request app tracking transparency permission
+        const result = await App.requestTrackingAuthorization();
+        
+        if (result.status !== 'authorized') {
+          // Open settings if permission not granted
+          await this.openSettings();
+          return false;
+        }
+        
+        this.hasPermission = true;
+        return true;
+      }
+
+      return false;
     } catch (error) {
-      console.error('Permission request failed:', error);
+      console.error('Error requesting permissions:', error);
       return false;
     }
   }
 
   async getInstalledApps(): Promise<AppInfo[]> {
     if (!this.isNative) {
-      // Return mock data for web testing
+      // Mock data for web testing
       return [
-        { name: 'Instagram', packageName: 'com.instagram.android' },
-        { name: 'YouTube', packageName: 'com.google.android.youtube' },
-        { name: 'WhatsApp', packageName: 'com.whatsapp' },
-        { name: 'TikTok', packageName: 'com.zhiliaoapp.musically' },
-        { name: 'Facebook', packageName: 'com.facebook.katana' },
+        { name: "Instagram", packageName: "com.instagram.android", icon: "📷" },
+        { name: "YouTube", packageName: "com.google.android.youtube", icon: "📺" },
+        { name: "WhatsApp", packageName: "com.whatsapp", icon: "💬" }
       ];
     }
 
+    if (!this.hasPermission) {
+      throw new Error('Permission required to get installed apps');
+    }
+
     try {
-      // Native implementation would use a custom plugin
-      // to get installed apps from the device
-      console.log('Getting installed apps...');
+      // For Android
+      if (Capacitor.getPlatform() === 'android') {
+        // Use the App plugin to get app info
+        const appInfo = await App.getInfo();
+        return [{
+          name: appInfo.name,
+          packageName: appInfo.id,
+          icon: "📱"
+        }];
+      }
+      
+      // For iOS
+      if (Capacitor.getPlatform() === 'ios') {
+        // Use the App plugin to get app info
+        const appInfo = await App.getInfo();
+        return [{
+          name: appInfo.name,
+          packageName: appInfo.id,
+          icon: "📱"
+        }];
+      }
+
       return [];
     } catch (error) {
-      console.error('Failed to get installed apps:', error);
+      console.error('Error getting installed apps:', error);
       return [];
     }
   }
 
-  async blockApps(appPackages: string[]): Promise<boolean> {
+  async blockApps(packageNames: string[]): Promise<boolean> {
     if (!this.isNative) {
-      console.log('Simulating app blocking for:', appPackages);
+      console.log('Blocking apps (web):', packageNames);
       return true;
     }
 
     try {
-      // Native implementation would use device admin API
-      // to block specified apps
-      console.log('Blocking apps:', appPackages);
+      // Implement native app blocking logic here
+      console.log('Blocking apps (native):', packageNames);
       return true;
     } catch (error) {
       console.error('Failed to block apps:', error);
@@ -81,15 +144,15 @@ class NativeCapabilitiesService {
     }
   }
 
-  async unblockApps(appPackages: string[]): Promise<boolean> {
+  async unblockApps(packageNames: string[]): Promise<boolean> {
     if (!this.isNative) {
-      console.log('Simulating app unblocking for:', appPackages);
+      console.log('Unblocking apps (web):', packageNames);
       return true;
     }
 
     try {
-      // Native implementation would remove app restrictions
-      console.log('Unblocking apps:', appPackages);
+      // Implement native app unblocking logic here
+      console.log('Unblocking apps (native):', packageNames);
       return true;
     } catch (error) {
       console.error('Failed to unblock apps:', error);
@@ -99,14 +162,13 @@ class NativeCapabilitiesService {
 
   async blockDomains(domains: string[]): Promise<boolean> {
     if (!this.isNative) {
-      console.log('Simulating domain blocking for:', domains);
+      console.log('Blocking domains (web):', domains);
       return true;
     }
 
     try {
-      // Native implementation would modify device DNS/VPN
-      // or use accessibility service to block domains
-      console.log('Blocking domains:', domains);
+      // Implement native domain blocking logic here
+      console.log('Blocking domains (native):', domains);
       return true;
     } catch (error) {
       console.error('Failed to block domains:', error);
@@ -116,13 +178,13 @@ class NativeCapabilitiesService {
 
   async unblockDomains(domains: string[]): Promise<boolean> {
     if (!this.isNative) {
-      console.log('Simulating domain unblocking for:', domains);
+      console.log('Unblocking domains (web):', domains);
       return true;
     }
 
     try {
-      // Native implementation would remove domain restrictions
-      console.log('Unblocking domains:', domains);
+      // Implement native domain unblocking logic here
+      console.log('Unblocking domains (native):', domains);
       return true;
     } catch (error) {
       console.error('Failed to unblock domains:', error);
@@ -130,20 +192,17 @@ class NativeCapabilitiesService {
     }
   }
 
-  async startUsageMonitoring(): Promise<boolean> {
+  async startUsageMonitoring(): Promise<void> {
     if (!this.isNative) {
-      console.log('Simulating usage monitoring start');
-      return true;
+      console.log('Starting usage monitoring (web)');
+      return;
     }
 
     try {
-      // Native implementation would start background service
-      // to monitor app usage and blocked attempts
-      console.log('Starting usage monitoring...');
-      return true;
+      // Implement native usage monitoring logic here
+      console.log('Starting usage monitoring (native)');
     } catch (error) {
       console.error('Failed to start usage monitoring:', error);
-      return false;
     }
   }
 
@@ -194,10 +253,7 @@ class NativeCapabilitiesService {
       return false;
     }
   }
-
-  isRunningNatively(): boolean {
-    return this.isNative;
-  }
 }
 
 export const nativeCapabilities = new NativeCapabilitiesService();
+export type { AppInfo };

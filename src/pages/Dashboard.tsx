@@ -1,7 +1,6 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import AddAppBlockDialog from "@/components/AddAppBlockDialog";
+import { AddAppBlockDialog } from "@/components/AddAppBlockDialog";
 import ScheduleBlockDialog from "@/components/ScheduleBlockDialog";
 import AnalyticsView from "@/components/AnalyticsView";
 import AppLayout from "@/components/AppLayout";
@@ -12,6 +11,8 @@ import AppManagement from "@/components/dashboard/AppManagement";
 import NativeStatus from "@/components/dashboard/NativeStatus";
 import { useFocusSession } from "@/hooks/useFocusSession";
 import { useAppBlocks } from "@/hooks/useAppBlocks";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 const Dashboard = () => {
   const { activeSession, focusLogs, handleStartFocus, endSession, triggerTestNotification } = useFocusSession();
@@ -29,11 +30,29 @@ const Dashboard = () => {
     setSchedules(prev => [...prev, newSchedule]);
   };
 
+  const handleAddApp = (app: { name: string; packageName?: string }) => {
+    // Handle adding a new app block
+    console.log('Adding app:', app);
+  };
+
   return (
     <AppLayout 
       availableBlocks={availableBlocks} 
       onStartFocus={handleStartFocus}
     >
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Focus Dashboard</h1>
+        <div className="space-x-2">
+          <Button onClick={() => setAddAppBlockOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add New Block
+          </Button>
+          <Button variant="outline" onClick={() => setScheduleBlockOpen(true)}>
+            Schedule Block
+          </Button>
+        </div>
+      </div>
+
       <StatsOverview blockedAppsCount={blockedApps.filter(app => app.blocked).length} />
 
       <div className="grid lg:grid-cols-3 gap-6">
@@ -70,7 +89,7 @@ const Dashboard = () => {
       <AddAppBlockDialog
         open={addAppBlockOpen}
         onOpenChange={setAddAppBlockOpen}
-        onAddBlock={handleAddBlock}
+        onAddApp={handleAddApp}
       />
 
       <ScheduleBlockDialog

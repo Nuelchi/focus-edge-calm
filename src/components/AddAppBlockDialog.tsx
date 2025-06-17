@@ -1,43 +1,102 @@
-
-import { useState } from "react";
-import { Plus, Smartphone, Globe, Users, X } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useState, useEffect } from "react";
+import { Plus, Smartphone, Globe, Users, X, Search, Settings } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { nativeCapabilities, AppInfo } from "@/services/nativeCapabilities";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Loader2, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface AddAppBlockDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAddBlock: (block: any) => void;
+  onAddApp: (app: { name: string; packageName?: string }) => void;
 }
 
 const popularApps = [
-  { name: "Instagram", icon: "📷", category: "Social Media" },
-  { name: "TikTok", icon: "🎵", category: "Entertainment" },
-  { name: "YouTube", icon: "📺", category: "Entertainment" },
-  { name: "Facebook", icon: "👥", category: "Social Media" },
-  { name: "Twitter", icon: "🐦", category: "Social Media" },
-  { name: "Snapchat", icon: "👻", category: "Social Media" },
-  { name: "WhatsApp", icon: "💬", category: "Messaging" },
-  { name: "Netflix", icon: "🎬", category: "Entertainment" },
+  { name: "Instagram", icon: "📷", category: "Social Media", packageName: "com.instagram.android" },
+  { name: "TikTok", icon: "🎵", category: "Entertainment", packageName: "com.zhiliaoapp.musically" },
+  { name: "YouTube", icon: "📺", category: "Entertainment", packageName: "com.google.android.youtube" },
+  { name: "Facebook", icon: "👥", category: "Social Media", packageName: "com.facebook.katana" },
+  { name: "Twitter", icon: "🐦", category: "Social Media", packageName: "com.twitter.android" },
+  { name: "Snapchat", icon: "👻", category: "Social Media", packageName: "com.snapchat.android" },
+  { name: "WhatsApp", icon: "💬", category: "Messaging", packageName: "com.whatsapp" },
+  { name: "Netflix", icon: "🎬", category: "Entertainment", packageName: "com.netflix.mediaclient" },
   { name: "Gaming Apps", icon: "🎮", category: "Games" },
   { name: "News Apps", icon: "📰", category: "News" }
 ];
 
-const AddAppBlockDialog = ({ open, onOpenChange, onAddBlock }: AddAppBlockDialogProps) => {
+export function AddAppBlockDialog({ open, onOpenChange, onAddApp }: AddAppBlockDialogProps) {
   const [selectedApps, setSelectedApps] = useState<string[]>([]);
   const [customDomains, setCustomDomains] = useState<string[]>([]);
   const [groupName, setGroupName] = useState("");
   const [newDomain, setNewDomain] = useState("");
+  const [installedApps, setInstalledApps] = useState<AppInfo[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedApp, setSelectedApp] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasPermission, setHasPermission] = useState(false);
+  const [permissionError, setPermissionError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const handleAddApp = (appName: string) => {
-    if (!selectedApps.includes(appName)) {
-      setSelectedApps([...selectedApps, appName]);
+  useEffect(() => {
+    if (open) {
+      loadInstalledApps();
+    }
+  }, [open]);
+
+  const loadInstalledApps = async () => {
+    setIsLoading(true);
+    setPermissionError(null);
+    try {
+      // Request permissions if not already granted
+      if (!hasPermission) {
+        const granted = await nativeCapabilities.requestPermissions();
+        setHasPermission(granted);
+        if (!granted) {
+          setPermissionError("Please grant the required permissions to access installed apps.");
+          return;
+        }
+      }
+
+      const apps = await nativeCapabilities.getInstalledApps();
+      setInstalledApps(apps);
+    } catch (error) {
+      console.error('Failed to load installed apps:', error);
+      setPermissionError("Failed to load installed apps. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleOpenSettings = async () => {
+    await nativeCapabilities.openSettings();
+  };
+
+  const handleAddApp = () => {
+    if (!selectedApp) {
+      toast({
+        title: "No App Selected",
+        description: "Please select an app to add.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const app = installedApps.find(app => app.packageName === selectedApp);
+    if (app) {
+      onAddApp({
+        name: app.name,
+        packageName: app.packageName
+      });
+      setSelectedApp("");
+      onOpenChange(false);
     }
   };
 
@@ -81,7 +140,7 @@ const AddAppBlockDialog = ({ open, onOpenChange, onAddBlock }: AddAppBlockDialog
       createdAt: new Date().toISOString()
     };
 
-    onAddBlock(newBlock);
+    onAddApp(newBlock);
     
     // Reset form
     setSelectedApps([]);
@@ -96,6 +155,10 @@ const AddAppBlockDialog = ({ open, onOpenChange, onAddBlock }: AddAppBlockDialog
     
     onOpenChange(false);
   };
+
+  const filteredApps = installedApps.filter(app =>
+    app.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -130,7 +193,7 @@ const AddAppBlockDialog = ({ open, onOpenChange, onAddBlock }: AddAppBlockDialog
                     size="sm"
                     onClick={() => selectedApps.includes(app.name) 
                       ? handleRemoveApp(app.name) 
-                      : handleAddApp(app.name)
+                      : setSelectedApp(app.packageName)
                     }
                     className="justify-start"
                   >
@@ -138,6 +201,45 @@ const AddAppBlockDialog = ({ open, onOpenChange, onAddBlock }: AddAppBlockDialog
                     {app.name}
                   </Button>
                 ))}
+              </div>
+            </div>
+
+            <div>
+              <Label>Installed Apps</Label>
+              <div className="relative mt-2">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search installed apps..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-8"
+                  disabled={!hasPermission}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2 mt-2 max-h-[200px] overflow-y-auto">
+                {isLoading ? (
+                  <div className="flex justify-center items-center h-40">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                  </div>
+                ) : (
+                  <ScrollArea className="h-[300px] rounded-md border p-4">
+                    <Select value={selectedApp} onValueChange={setSelectedApp}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an app" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {filteredApps.map((app) => (
+                          <SelectItem key={app.packageName} value={app.packageName || ""}>
+                            <div className="flex items-center gap-2">
+                              {app.icon && <span>{app.icon}</span>}
+                              <span>{app.name}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </ScrollArea>
+                )}
               </div>
             </div>
           </TabsContent>
@@ -205,14 +307,37 @@ const AddAppBlockDialog = ({ open, onOpenChange, onAddBlock }: AddAppBlockDialog
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleCreateBlock} className="bg-gradient-to-r from-blue-600 to-purple-600">
+          <Button 
+            onClick={handleCreateBlock} 
+            disabled={!selectedApp || isLoading || !hasPermission}
+            className="bg-gradient-to-r from-blue-600 to-purple-600"
+          >
             <Users className="h-4 w-4 mr-2" />
             Create Block
           </Button>
         </div>
+
+        {permissionError && (
+          <div className="mt-4">
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Permission Required</AlertTitle>
+              <AlertDescription className="flex flex-col gap-2">
+                <p>{permissionError}</p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleOpenSettings}
+                  className="w-fit"
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  Open Settings
+                </Button>
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
-};
-
-export default AddAppBlockDialog;
+}
